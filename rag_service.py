@@ -2,6 +2,7 @@
 import os
 import json
 import logging
+import threading, time
 from typing import Optional, List, Dict, Any
 
 import requests
@@ -17,6 +18,29 @@ from openai import OpenAI
 
 # === ENV ===
 load_dotenv()
+
+#keep alive
+KEEPALIVE_URL = os.getenv("KEEPALIVE_URL")  # e.g., https://innoverse-chat.onrender.com/health
+KEEPALIVE_INTERVAL = int(os.getenv("KEEPALIVE_INTERVAL", "600"))  # seconds (default 10 min)
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+def keepalive():
+    if not KEEPALIVE_URL:
+        return
+    while True:
+        try:
+            r = requests.get(KEEPALIVE_URL, timeout=10)
+            log.info("Keep-alive ping %s -> %s", KEEPALIVE_URL, r.status_code)
+        except Exception as e:
+            log.warning("Keep-alive failed: %s", e)
+        time.sleep(KEEPALIVE_INTERVAL)
+
+# launch keepalive in background
+if KEEPALIVE_URL:
+    threading.Thread(target=keepalive, daemon=True).start()
 
 BACKEND_URL = os.getenv("BACKEND_URL")  # e.g., https://innoverse-backend.yourdomain.com
 if not BACKEND_URL:
