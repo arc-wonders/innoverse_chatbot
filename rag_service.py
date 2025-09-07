@@ -1,4 +1,3 @@
-# rag_service.py
 import os
 import json
 import logging
@@ -23,6 +22,8 @@ load_dotenv()
 KEEPALIVE_URL = os.getenv("KEEPALIVE_URL")  # e.g., https://innoverse-chat.onrender.com/health
 KEEPALIVE_INTERVAL = int(os.getenv("KEEPALIVE_INTERVAL", "600"))  # seconds (default 10 min)
 
+
+app = FastAPI(title="Innoverse Chat Gateway", version="1.0.0")
 @app.get("/health")
 def health():
     return {"status": "ok"}
